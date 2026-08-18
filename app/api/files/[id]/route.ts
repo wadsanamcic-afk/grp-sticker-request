@@ -1,0 +1,3 @@
+import { requireUser } from "../../../../lib/auth";
+import { supabaseAdmin } from "../../../../lib/supabase";
+export async function GET(req:Request,{params}:{params:Promise<{id:string}>}){if(!await requireUser(req))return new Response("Unauthorized",{status:401});const {id}=await params,db=supabaseAdmin(),{data:f}=await db.from("delivery_files").select().eq("id",Number(id)).maybeSingle();if(!f)return new Response("Not found",{status:404});const {data}=await db.storage.from("delivery-files").download(f.storage_path);return data?new Response(data.stream(),{headers:{"content-type":f.mime_type||"application/octet-stream","content-disposition":`attachment; filename*=UTF-8''${encodeURIComponent(f.file_name)}`}}):new Response("Not found",{status:404})}
